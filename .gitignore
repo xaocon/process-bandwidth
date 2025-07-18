@@ -125,3 +125,5 @@ zz_generated_*_test.go
 vendordiff.patch
 
 bin/
+
+/.check*

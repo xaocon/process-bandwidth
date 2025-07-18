@@ -9,9 +9,10 @@ import (
 	"strings"
 	"time"
 
+	manager "github.com/gojue/ebpfmanager"
+
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/perf"
-	manager "github.com/gojue/ebpfmanager"
 	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
 )

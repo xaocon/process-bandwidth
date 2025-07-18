@@ -16,7 +16,7 @@ type Process struct {
 
 	process *process.Process
 
-	connOnce    sync.Once // 用于首次初始化 Connections Map
+	connOnce    sync.Once // Used for first initialization: Connections Map
 	Connections *sync.Map[uint32, *Connection]
 
 	RWEventCounter

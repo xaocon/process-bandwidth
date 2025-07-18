@@ -37,55 +37,52 @@ func startSnapShotWorker() {
 	var start, end time.Time
 	var duration time.Duration
 
-	for {
-		select {
-		case <-ticker:
-			start = time.Now()
-			SnapshotLock.Lock()
-			ProcessesMap.Range(func(pid uint32, bp *Process) bool {
-				if bp.isIdle() { // idle process
-					ProcessesMap.Delete(bp.Pid)
+	for range ticker {
+		start = time.Now()
+		SnapshotLock.Lock()
+		ProcessesMap.Range(func(pid uint32, bp *Process) bool {
+			if bp.isIdle() { // idle process
+				ProcessesMap.Delete(bp.Pid)
+				return true
+			}
+
+			account := 0
+			bp.Connections.Range(func(fd uint32, bc *Connection) bool {
+				if bc.isIdle() { // idle connection
+					bp.Connections.Delete(bc.FD)
+					if ci := bc.ConnectionInfo; ci != nil {
+						ConnectionsMap.Delete(ci.Inode)
+					}
 					return true
 				}
 
-				account := 0
-				bp.Connections.Range(func(fd uint32, bc *Connection) bool {
-					if bc.isIdle() { // idle connection
-						bp.Connections.Delete(bc.FD)
-						if ci := bc.ConnectionInfo; ci != nil {
-							ConnectionsMap.Delete(ci.Inode)
-						}
-						return true
-					}
-
-					if bc.ShouldSkip() {
-						return true
-					}
-
-					account++
-					bc.takeSnapshot()
-
-					return true
-				})
-
-				if account == 0 {
+				if bc.ShouldSkip() {
 					return true
 				}
-				bp.takeSnapshot()
+
+				account++
+				bc.takeSnapshot()
+
 				return true
 			})
 
-			// interfaceMap just for debug use, after all so many tools can offer this data and better than us
-			interfacesMap.Range(func(name string, bi *Interface) bool {
-				bi.takeSnapshot()
+			if account == 0 {
 				return true
-			})
-			SnapshotLock.Unlock()
+			}
+			bp.takeSnapshot()
+			return true
+		})
 
-			end = time.Now()
-			duration = end.Sub(start)
-			SnapShotProfileCounter.Inc(duration)
-		}
+		// interfaceMap just for debug use, after all so many tools can offer this data and better than us
+		interfacesMap.Range(func(name string, bi *Interface) bool {
+			bi.takeSnapshot()
+			return true
+		})
+		SnapshotLock.Unlock()
+
+		end = time.Now()
+		duration = end.Sub(start)
+		SnapShotProfileCounter.Inc(duration)
 	}
 }
 
