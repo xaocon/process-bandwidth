@@ -3,9 +3,10 @@ package engine
 import (
 	"bytes"
 	"encoding/binary"
+	"strings"
+
 	"github.com/Ivlyth/process-bandwidth/pkg/sync"
 	"github.com/shirou/gopsutil/v3/process"
-	"strings"
 )
 
 type Direction uint8
@@ -21,11 +22,12 @@ func (d Direction) String() string {
 type FDType uint8
 
 func (t FDType) String() string {
-	if t == 0 {
+	switch t {
+	case 0:
 		return "unknown"
-	} else if t == 1 {
+	case 1:
 		return "socket"
-	} else {
+	default:
 		return "file"
 	}
 }

@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/Ivlyth/process-bandwidth/pkg/sync"
-	psnet "github.com/shirou/gopsutil/v3/net"
-	"io/ioutil"
+
 	"net"
 	"os"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/Ivlyth/process-bandwidth/pkg/sync"
+	psnet "github.com/shirou/gopsutil/v3/net"
 )
 
 var (
@@ -111,7 +112,7 @@ func findConnectionInfoBy(pid, fd uint32, inode string) *ConnectionInfo {
 }
 
 func refreshFromInet(file string, family, sockType int, currentPid, currentFD uint32, currentINode string) *ConnectionInfo {
-	contents, err := ioutil.ReadFile(file)
+	contents, err := os.ReadFile(file)
 	if err != nil {
 		return nil // keep quiet
 	}
@@ -203,7 +204,7 @@ func refreshNetConnections(currentPid, currentFD uint32, currentINode string) *C
 
 	startTime := time.Now()
 	defer func() {
-		RefreshNetConnectionsProfileCounter.Inc(time.Now().Sub(startTime))
+		RefreshNetConnectionsProfileCounter.Inc(time.Since(startTime))
 	}()
 
 	v, loaded := ConnectionsMap.Load(currentINode)

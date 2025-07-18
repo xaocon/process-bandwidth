@@ -4,15 +4,16 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"github.com/cilium/ebpf"
-	"github.com/cilium/ebpf/perf"
-	manager "github.com/ehids/ebpfmanager"
-	"github.com/pkg/errors"
-	"golang.org/x/sys/unix"
 	"math"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/cilium/ebpf"
+	"github.com/cilium/ebpf/perf"
+	manager "github.com/gojue/ebpfmanager"
+	"github.com/pkg/errors"
+	"golang.org/x/sys/unix"
 )
 
 //go:embed tracepoint.o
@@ -113,7 +114,7 @@ func (tp *TracePointProbe) setupManagers() error {
 		DefaultKProbeMaxActive: 1024,
 		VerifierOptions: ebpf.CollectionOptions{
 			Programs: ebpf.ProgramOptions{
-				LogSize: 2097152,
+				LogSizeStart: 2097152,
 			},
 		},
 		RLimit: &unix.Rlimit{
@@ -180,13 +181,13 @@ func (tp *TracePointProbe) startPerfEventReader(c chan<- []byte, errChan chan<- 
 		}
 
 		if record.LostSamples != 0 {
-			PerfReaderLostProfileCounter.Add(record.LostSamples, time.Now().Sub(now))
-			PerfReaderReadProfileCounter.Add(record.LostSamples, time.Now().Sub(now))
+			PerfReaderLostProfileCounter.Add(record.LostSamples, time.Since(now))
+			PerfReaderReadProfileCounter.Add(record.LostSamples, time.Since(now))
 			logger.Printf("ERROR: perf event ring buffer full - %s, dropped %d samples", tp.eventMap.String(), record.LostSamples)
 			continue
 		}
 
 		c <- record.RawSample
-		PerfReaderReadProfileCounter.Inc(time.Now().Sub(now))
+		PerfReaderReadProfileCounter.Inc(time.Since(now))
 	}
 }

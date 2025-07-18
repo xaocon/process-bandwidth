@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"time"
+
 	"github.com/Ivlyth/process-bandwidth/config"
 	"github.com/Ivlyth/process-bandwidth/logging"
 	"github.com/Ivlyth/process-bandwidth/pkg/profile"
 	"go.uber.org/atomic"
-	"time"
 )
 
 var logger = logging.GetLogger()
@@ -127,6 +128,6 @@ func processPerfEvents(c <-chan []byte, pc *profile.Counter) {
 		}
 
 		event.Process()
-		pc.Inc(time.Now().Sub(start))
+		pc.Inc(time.Since(start))
 	}
 }

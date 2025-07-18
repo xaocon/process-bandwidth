@@ -3,7 +3,7 @@ package engine
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"sync"
 	"time"
 )
@@ -54,7 +54,7 @@ func (s *RWSnapshot) MarshalJSON() ([]byte, error) {
 	buf.WriteString(fmt.Sprintf(`"incoming":"%s",`, s.IncomingRateAutobS()))
 	buf.WriteString(fmt.Sprintf(`"outgoing":"%s"`, s.OutgoingRateAutobS()))
 	buf.WriteByte('}')
-	return ioutil.ReadAll(buf)
+	return io.ReadAll(buf)
 }
 
 func (s *RWSnapshot) Clone() RWSnapshot {

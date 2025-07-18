@@ -1,11 +1,12 @@
 package engine
 
 import (
+	"sync"
+	"time"
+
 	"github.com/Ivlyth/process-bandwidth/config"
 	"github.com/Ivlyth/process-bandwidth/pkg/ring"
 	"go.uber.org/atomic"
-	"sync"
-	"time"
 )
 
 type RWEventCounter struct {
@@ -28,7 +29,7 @@ type RWEventCounter struct {
 }
 
 func (rw *RWEventCounter) isIdle() bool {
-	return !rw.LastUpdateAt.IsZero() && time.Now().Sub(rw.LastUpdateAt) > config.GlobalConfig.IdleTimeout
+	return !rw.LastUpdateAt.IsZero() && time.Since(rw.LastUpdateAt) > config.GlobalConfig.IdleTimeout
 }
 
 func (rw *RWEventCounter) addByRWEvent(rwEvent *RWEvent) {
